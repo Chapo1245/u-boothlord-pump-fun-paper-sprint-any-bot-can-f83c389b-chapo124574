@@ -101,9 +101,9 @@ export const DEFAULT_PARAMS: Params = {
   bigSellSol: 1,
   maxMain: 5,
   maxExposureSol: 3,
-  targetCoins: 25,
+  targetCoins: 21,
   paceSecs: 21600,
-  probeSol: 0.02,
+  probeSol: 0.01,
   maxProbes: 2,
 };
 
@@ -169,17 +169,23 @@ export function createStrategy(p: Params = DEFAULT_PARAMS): Bot {
           if (lastTime === null || e.block_time > lastTime) lastTime = e.block_time;
         }
         if (e.event === 'CreateEvent') {
-          coins.set(e.mint, {
-            creator: e.user,
-            created: e.slot,
-            createPrice: Number(e.virtual_quote_reserves) / Number(e.virtual_token_reserves),
-            devBuySol: 0,
-            devSold: false,
-            buyers: new Set(),
-            worstSell: 0,
-            netSol: 0,
-            done: false,
-          });
+          // Only the first CreateEvent for a mint counts: a replayed window can carry the same
+          // create twice (block surrogates repeat blocks), and re-creating the record would
+          // wipe the done flag and let the bot buy the same coin again mid-dump. On real data a
+          // mint is created exactly once, so this changes nothing there.
+          if (!coins.has(e.mint)) {
+            coins.set(e.mint, {
+              creator: e.user,
+              created: e.slot,
+              createPrice: Number(e.virtual_quote_reserves) / Number(e.virtual_token_reserves),
+              devBuySol: 0,
+              devSold: false,
+              buyers: new Set(),
+              worstSell: 0,
+              netSol: 0,
+              done: false,
+            });
+          }
         } else if (e.event === 'TradeEvent') {
           const c = coinOf(e.mint);
           if (c !== undefined) {
