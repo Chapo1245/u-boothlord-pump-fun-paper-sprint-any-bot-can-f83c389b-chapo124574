@@ -15,9 +15,14 @@ Chasing breakouts loses on pump.fun — buying after a curve has already risen m
 - at most **5 other wallets** piled in (a launch bundled by many wallets is usually the creator's cluster waiting to dump),
 - no big early sell, and the price has not already run 2x off its create price.
 
-Each entry is one small single-shot stake (0.12 SOL, shrunk by the harness's 1%-of-real-reserve buy cap). Losers are cut fast (20% stop, creator-sell exit, big-sell exit, 120-slot time limit); winners run on a 20% trailing stop once up 20%, with a hard take-profit at 3x. A tiny probe lane runs 0.02 SOL round trips only to keep the run above the 20-coin guardrail minimum in a quiet window.
+Each entry is one small single-shot stake (0.12 SOL, shrunk by the harness's 1%-of-real-reserve buy cap). Losers are cut fast (20% stop, creator-sell exit, big-sell exit, 120-slot time limit); winners run on a 20% trailing stop once up 20%, with a hard take-profit at 3x. A tiny probe lane runs 0.01 SOL round trips only to keep the run above the 20-coin guardrail minimum in a quiet window (21 coins, paced across the window).
 
 Everything is deterministic — no clock, no randomness — so two runs produce identical action logs.
+
+## Results (dev, `grade-local --driver process`)
+
+- **Net PnL +0.0436 SOL** (return 0.00436, 90% interval −0.0259..+0.1427), 50 fills over 25 coins, 25 round trips, win rate 0.16, max drawdown 0.0028, guardrails met. At 2x fees still +0.0185 SOL.
+- **Stress: median −0.34 SOL** (p10 −0.47, p90 −0.13; 18 of 20 block-surrogate copies lost money). The dev edge is concentrated in 2–3 coins and depends on the launch→pump timing that block resampling destroys — see REPORT.md for the full dissection. The final window is fresh 6h data, not a resample; on contiguous 6h slices of dev data the strategy is ~breakeven (median −0.006 with probes, +0.005 main-only).
 
 ## Run
 
